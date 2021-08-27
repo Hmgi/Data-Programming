@@ -3,11 +3,13 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import time
 import pyperclip
+from bs4 import BeautifulSoup
+from datetime import datetime
 
 driver = webdriver.Chrome('C:\\Users\hk335\Desktop\chromedriver_win32 (1)\chromedriver')
 
-uid = 'hk335078'
-upw = 'ksy331008'  # 네이버 로그인 페이지로 이동
+uid = '******'
+upw = '******'  # 네이버 로그인 페이지로 이동
 
 url = ('https://nid.naver.com/nidlogin.login')
 
@@ -33,3 +35,47 @@ time.sleep(1)
 login_btn = driver.find_element_by_id('log.login')
 login_btn.click()
 time.sleep(2)
+
+def move_page(page):
+    key_url = 'https://cafe.naver.com/casuallydressed?iframe_url=/ArticleList.nhn%3Fsearch.clubid=19943558%26search.menuid=79%26search.boardtype=I%26search.totalCount=201%26search.page={}'.format(
+        page)
+    return key_url
+
+data = []  # 전체 게시글을 담을 리스트
+
+for i in range(1, 10):
+    url = move_page(i)
+    driver.get(url)
+
+    # 소스를 뽑아내기 위해 프레임 변경
+    driver.switch_to.frame('cafe_main')
+
+    search_url = driver.page_source
+    soup = BeautifulSoup(search_url, 'html.parser')
+
+    subj_locate = '#main-area > ul.article-album-sub > li:nth-child(n) > dl > dt > a.tit > span > span'
+    subjects = soup.select(subj_locate)
+
+    #print( subjects )
+
+    # 제목을 순회하면서 제목, 날짜를 긁어온다.
+    for subject in subjects:
+        d = []  # 게시글 하나의 제목과 날짜를 임시로 담을 리스트
+
+        ## 제목
+        sub = subject.text.strip()
+        d.append(sub)
+        d.append('|||')
+
+        ##날짜
+        date_locate = '#main-area > ul.article-album-sub > li:nth-child(n) > dl > dd.date_num > span.date'
+        date = soup.select(date_locate)
+        date = date[0].getText().strip()
+
+        if len(date) <= 5:  # 오늘 글쓴 경우 시간만 나오므로 오늘 날짜로 변경해준다.
+            date = datetime.today().strftime("%Y.%m.%d.")
+
+        d.append(date)
+
+        data.append(d)  # 최종적으로 d리스트에 있는 값들을 data리스트에 저장한다.
+        print(d)

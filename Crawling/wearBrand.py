@@ -12,7 +12,7 @@ import re
 driver = webdriver.Chrome('C:\\Users\hk335\Desktop\chromedriver')
 
 uid = '********'
-upw = '********'  # 네이버 로그인 페이지로 이동
+upw = '********'  # 네이버 로그인 페이지 이동
 
 url = ('https://nid.naver.com/nidlogin.login')
 
